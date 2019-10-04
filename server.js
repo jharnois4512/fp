@@ -152,8 +152,10 @@ app.post('/login', function (req,res){
   req.on('end', function() {
     let inputData = dataString
     if(inputData.includes("cornnog")){
-      res.sendFile('/views/test.html', { root: '.' })
-      ;
+      res.sendFile('/views/test.html', { root: '.' });
+    }
+    else{
+      res.sendFile('/views/failure.html', { root: '.' });
     }
   })
 });
