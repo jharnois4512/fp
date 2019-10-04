@@ -4,8 +4,6 @@ const express = require('express'),
       port = 3000,
       bodyParser = require('body-parser'),
       url = require('url'),
-      passport = require('passport'),
-      Strategy = require('passport-local').Strategy,
       db = require('./db'),
       dbFile = require('./object.json'),
       asyncHandler = require('express-async-handler')
@@ -16,18 +14,15 @@ let search = null;
 async function getAccount(){
 	const rawger = await Rawger();
   const {users} = rawger;
-  //{name:'Ape Escape 2'}
   owned = (await users('WPI-GDC').games('owned')).raw();
   games = await (await users('WPI-GDC').games('owned')).next();
   while(typeof games !== 'undefined'){
-    //console.log(games.filter(function(o) { return o.name.includes("Kirby")}))
     owned = owned.concat(games.get());
     games = await games.next()
     console.log("AMOUNT IN LIST IS: ",owned.length)
   }
   console.log("AMOUNT OF GAMES IS: " + (await users('WPI-GDC').games('owned')).count())
   console.log("AMOUNT IN LIST IS: ",owned.length)
-	//console.log(owned)
   }
 
 async function gameSearch(search, genre, Console){
@@ -148,34 +143,20 @@ async function gameGet(gameName){
 }
 
 db.users.loadUser((dbFile))
-passport.use(new Strategy(function(username, password,cb) {
-  db.users.findByUsername(username, function(err, user) {
-     if (err) { return cb(err); }
-     if (!user) { return cb(null, false, { message: 'Incorrect username.' }); }
-     bcrypt.compare(password, user.password, function(err, res) {
-      if(res == true)
-        return cb(null, user);
-      return cb(null, false, { message: 'Incorrect password.' }); 
-     });
-   });  
-}))
 
-passport.serializeUser(function(user, cb) {
- console.log("serialized "+ user.username)
- cb(null, user.id);
+app.post('/login', function (req,res){
+  let dataString = ''
+  req.on( 'data', function( data ) {
+      dataString += data 
+  })
+  req.on('end', function() {
+    let inputData = dataString
+    if(inputData.includes("cornnog")){
+      res.sendFile('/views/test.html', { root: '.' })
+      ;
+    }
+  })
 });
-
-passport.deserializeUser(function(id, cb) {
- db.users.findById(id, function (err, user) {
-   if (err) { return cb(err); }
-   console.log("deserialized "+ user.username)
-   cb(null, user);
- });
-});
-
-app.post('/login', passport.authenticate('local', { failureRedirect: '/failure' }), function(req, res) {
-    res.redirect('/');
-  });
 
 getAccount()
 
