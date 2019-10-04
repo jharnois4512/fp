@@ -4,10 +4,13 @@ const express = require('express'),
       port = 3000,
       bodyParser = require('body-parser'),
       url = require('url'),
+      passport = require('passport'),
+      Strategy = require('passport-local').Strategy,
+      db = require('./db'),
+      dbFile = require('./object.json'),
       asyncHandler = require('express-async-handler')
 
-
-      
+var users;      
 let owned = null;
 let search = null;
 async function getAccount(){
@@ -144,6 +147,36 @@ async function gameGet(gameName){
   return await Promise.resolve(gameGot);
 }
 
+db.users.loadUser((dbFile))
+passport.use(new Strategy(function(username, password,cb) {
+  db.users.findByUsername(username, function(err, user) {
+     if (err) { return cb(err); }
+     if (!user) { return cb(null, false, { message: 'Incorrect username.' }); }
+     bcrypt.compare(password, user.password, function(err, res) {
+      if(res == true)
+        return cb(null, user);
+      return cb(null, false, { message: 'Incorrect password.' }); 
+     });
+   });  
+}))
+
+passport.serializeUser(function(user, cb) {
+ console.log("serialized "+ user.username)
+ cb(null, user.id);
+});
+
+passport.deserializeUser(function(id, cb) {
+ db.users.findById(id, function (err, user) {
+   if (err) { return cb(err); }
+   console.log("deserialized "+ user.username)
+   cb(null, user);
+ });
+});
+
+app.post('/login', passport.authenticate('local', { failureRedirect: '/failure' }), function(req, res) {
+    res.redirect('/');
+  });
+
 getAccount()
 
 app.use(bodyParser.urlencoded());
@@ -158,7 +191,7 @@ app.get('/requests', function (req, res) {
 app.get('/games', function (req, res) {
   res.sendFile('/views/games.html', { root: '.' })
 })
-app.get('/catalogue', function (req, res) {
+app.get('/catalog', function (req, res) {
   res.sendFile('/views/catalogue.html', { root: '.' })
 })
 
@@ -175,7 +208,18 @@ app.get('/image.jpg', function (req, res) {
 app.get('/new', function (req, res) {
   res.sendFile('/resources/ARCADE.TTF', { root: '.' })
 })
-
+app.get('/login', function (req, res) {
+  res.sendFile('/views/login.html', { root: '.' })
+})
+app.get('/index.js', function (req, res) {
+  res.sendFile('/db/index.js', { root: '.' })
+})
+app.get('/users.js', function (req, res) {
+  res.sendFile('/db/users.js', { root: '.' })
+})
+app.get('/failure', function (req, res) {
+  res.sendFile('/views/failure.html', { root: '.' })
+})
 app.get('/gamesearch', function(req,res){
   gameToSearch = req.query
   gameSearch(gameToSearch['gameName'], gameToSearch['genre'], gameToSearch['console']).then(result => {
@@ -193,6 +237,4 @@ app.get('/gameselect', asyncHandler(async (req, res, next) => {
     res.send(result)
   })
 }))
-
-
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
