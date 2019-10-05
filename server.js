@@ -332,7 +332,7 @@ app.get('/gameselect', asyncHandler(async (req, res, next) => {
   res.status(404).send('Not found');
   console.log("You Got The Game: " + gameName)
   gameGet(gameName).then(result => {
-    res.send(result)
+    res.send("Found")
   })
 }))
 
