@@ -4,10 +4,11 @@ const express = require('express'),
       port = 3000,
       bodyParser = require('body-parser'),
       url = require('url'),
+      db = require('./db'),
+      dbFile = require('./object.json'),
       asyncHandler = require('express-async-handler')
 
-
-      
+var users;      
 let owned = null;
 let search = null;
 async function getAccount(){
@@ -26,7 +27,6 @@ async function getAccount(){
   }
   console.log("AMOUNT OF GAMES IS: " + (await users('WPI-GDC').games('owned')).count())
   console.log("AMOUNT IN LIST IS: ",owned.length)
-	//console.log(owned)
   }
 
 async function gameSearch(search, genre, Console){
@@ -296,7 +296,7 @@ app.get('/request', function (req, res) {
 app.get('/games', function (req, res) {
   res.sendFile('/views/games.html', { root: '.' })
 })
-app.get('/catalogue', function (req, res) {
+app.get('/catalog', function (req, res) {
   res.sendFile('/views/catalogue.html', { root: '.' })
 })
 app.get('/resources/gdcvectorscaledup.png',function (req, res){
@@ -318,6 +318,19 @@ app.get('/image.jpg', function (req, res) {
 app.get('/new', function (req, res) {
   res.sendFile('/resources/ARCADE.TTF', { root: '.' })
 })
+app.get('/login', function (req, res) {
+  res.sendFile('/views/login.html', { root: '.' })
+})
+app.get('/index.js', function (req, res) {
+  res.sendFile('/db/index.js', { root: '.' })
+})
+app.get('/users.js', function (req, res) {
+  res.sendFile('/db/users.js', { root: '.' })
+})
+app.get('/failure', function (req, res) {
+  res.sendFile('/views/failure.html', { root: '.' })
+})
+
 app.get('/gamesearch', function(req,res){
   gameToSearch = req.query
   gameSearch(gameToSearch['gameName'], gameToSearch['genre'], gameToSearch['console']).then(result => {
@@ -340,12 +353,9 @@ app.get('/gameselect', asyncHandler(async (req, res, next) => {
     res.send(result)
   })
 }))
-
 app.get('/requestgame',function(req,res){
   requestGame(req.query['gameId']).then(result => {
     res.send(result)
   })
 })
-
-
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))

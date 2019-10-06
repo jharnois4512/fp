@@ -1,0 +1,49 @@
+  <!doctype html>
+<html lang="en">
+  <head>
+    <title>Admin Login</title>
+    <meta charset="utf-8">
+     <link rel="stylesheet" href="https://unpkg.com/chota@latest">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico?v="+ Math.trunc(Math.random()*999)>
+    
+  </head>
+  <body>
+    <div class = "container text-center"><font size = "6"><h1>GDC admin login</h1></font></div>
+    <iframe name="hiddenFrame" width="0" height="0" border="0" style="display: none;"></iframe>
+    <form id ="data" action="/login" method="POST" >
+      <div class="row is-center">
+      <div class="col-3"><input type="password" id="pin" name="pin" placeholder="Password"></div>
+        </div>
+    </form>
+    <div class = "col is-center">
+    </div>
+    <div class = "col is-center">
+    <button id="login" class="button" onclick="login()" > Login </button>
+    </div>
+  </body>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js" ></script>
+  <script>
+    const submit = function( e ) {
+    e.preventDefault();
+    var json = {};
+    var body
+    json["pin"] = document.getElementById("pin");
+    body = JSON.stringify(json)
+    fetch( '/submit', {
+      method:'POST',
+      body 
+    }).then(function( response ) {
+      console.log(response)
+      return response.json();
+    }).then(function(data){
+      window.location.href="/"
+    })
+}
+    function login(){
+      document.getElementById('data').action = '/login'
+      document.getElementById('data').submit()
+      document.getElementById('data').reset()
+    }
+  </script>
+</html>
